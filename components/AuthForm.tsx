@@ -6,6 +6,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { signUp,signIn } from "@/lib/actions/user.action";
+
 import {
   Form,
   FormControl,
@@ -16,16 +18,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Divide } from "lucide-react";
+import { Divide, Loader2 } from "lucide-react";
 import CustomInput from "./CustomInput";
+import { log } from "console";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  address1: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  ssn: z.string().optional(),
 });
 
 const AuthForm = ({ type }: { type: string }) => {
+  const router = useRouter();
   const [user, setuser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -33,14 +47,38 @@ const AuthForm = ({ type }: { type: string }) => {
     defaultValues: {
       email: "",
       password: "",
+      firstName: "",
+      lastName: "",
+      address1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      dateOfBirth: "",
+      ssn: "",
     },
   });
+  const onSubmit=async (data: z.infer<typeof formSchema>) =>{
+    setIsLoading(true);
+    try {
+      if (type === "sign-up") {
+        const userData= await signUp(data);
+        setuser(newUser);
+      }
+      if (type === "sign-in") {
+        await signIn({
+          email: data.email,
+          password: data.password
+        });
+        router.push('/');
+          router.push('/');
+        }
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+      }
+    catch (error) {
+      console.log(error);
+    }finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -74,24 +112,66 @@ const AuthForm = ({ type }: { type: string }) => {
         <>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {type === 'sign-up' && (
+                <>
+                  <div className="flex gap-4">
+                    <CustomInput form={form} name='firstName' label="First Name" placeholder='Enter your first name' />
+                    <CustomInput form={form} name='lastName' label="Last Name" placeholder='Enter your first name' />
+                  </div>
+                  <CustomInput form={form} name='address1' label="Address" placeholder='Enter your specific address' />
+                  <CustomInput form={form} name='city' label="City" placeholder='Enter your city' />
+                  <div className="flex gap-4">
+                    <CustomInput form={form} name='state' label="State" placeholder='Example: Delhi' />
+                    <CustomInput form={form} name='postalCode' label="Postal Code" placeholder='Example: 11101' />
+                  </div>
+                  <div className="flex gap-4">
+                    <CustomInput form={form} name='dateOfBirth' label="Date of Birth" placeholder='YYYY-MM-DD' />
+                    {/* <CustomInput form={form} name='ssn' label="SSN" placeholder='Example: 1234' /> */}
+                  </div>
+                </>
+              )}
               <CustomInput
-              form={form}
-              name="email"
-              label="Email"
-              placeholder="Enter your email address"
+                form={form}
+                name="email"
+                label="Email"
+                placeholder="Enter your email address"
               />
-              <CustomInput 
-              form={form} 
-              name="password" 
-              label="Password" 
-              placeholder="Enter your password"
+              <CustomInput
+                form={form}
+                name="password"
+                label="Password"
+                placeholder="Enter your password"
               />
-              <Button 
-              type="submit" 
-              className="form-btn">Submit</Button>
+              <div className="flex flex-col gap-4">
+                <Button type="submit" disabled={isLoading} className="form-btn">
+                  {isLoading ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Loading...
+                    </>
+                  ) : type === "sign-in" ? (
+                    "Sign In"
+                  ) : (
+                    "Sign Up"
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
-          
+          <footer className="flex flex-col gap-1 justify-center">
+            <p className="text-14 font-normal text-gray-600">
+              {type === "sign-in"
+                ? "Don't have an account?"
+                : "Already have an account?"}
+            </p>
+
+            <Link
+              href={type === "sign-in" ? "/sign-up" : "/sign-in"}
+              className="form-link"
+            >
+              {type === "sign-in" ? "Sign-up" : "Sign-in"}
+            </Link>
+          </footer>
         </>
       )}
     </section>
@@ -99,3 +179,7 @@ const AuthForm = ({ type }: { type: string }) => {
 };
 
 export default AuthForm;
+function newUser(prevState: null): null {
+  throw new Error("Function not implemented.");
+}
+

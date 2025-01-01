@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 
 interface CustomInputProps {
   form: any;
-  name: 'email' | 'password';
+  name: 'email' | 'password' | 'name' | 'firstName' | 'lastName' | 'address1' | 'city' | 'state' | 'postalCode' | 'dateOfBirth' | 'ssn';
   label: string;
   placeholder: string;
 }
