@@ -1,35 +1,37 @@
-import React from "react";
-import { FormField, FormLabel, FormControl, FormMessage } from "./ui/form";
-import { Input } from "./ui/input";
+import React from 'react'
+import { FormControl, FormField, FormLabel, FormMessage } from './ui/form'
+import { Input } from './ui/input'
 
-interface CustomInputProps {
-  form: any;
-  name: 'email' | 'password' | 'name' | 'firstName' | 'lastName' | 'address1' | 'city' | 'state' | 'postalCode' | 'dateOfBirth' | 'ssn';
-  label: string;
-  placeholder: string;
+import { Control, FieldPath } from 'react-hook-form'
+import { z } from 'zod'
+import { authFormSchema } from '@/lib/utils'
+
+const formSchema = authFormSchema('sign-up')
+
+interface CustomInput {
+  control: Control<z.infer<typeof formSchema>>,
+  name: FieldPath<z.infer<typeof formSchema>>,
+  label: string,
+  placeholder: string
 }
 
-const CustomInput: React.FC<CustomInputProps> = ({
-  form,
-  name,
-  label,
-  placeholder,
-}) => {
+const CustomInput = ({ control, name, label, placeholder }: CustomInput) => {
   return (
     <FormField
-      control={form.control}
+      control={control}
       name={name}
-      render={({ field }: { field: any }) => (
+      render={({ field }) => (
         <div className="form-item">
-          <FormLabel className="form-label">{label}</FormLabel>
+          <FormLabel className="form-label">
+            {label}
+          </FormLabel>
           <div className="flex w-full flex-col">
             <FormControl>
-              <Input
+              <Input 
                 placeholder={placeholder}
-                {...field}
                 className="input-class"
                 type={name === 'password' ? 'password' : 'text'}
-                value={field.value || ''}
+                {...field}
               />
             </FormControl>
             <FormMessage className="form-message mt-2" />
@@ -37,7 +39,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
         </div>
       )}
     />
-  );
-};
+  )
+}
 
-export default CustomInput;
+export default CustomInput
